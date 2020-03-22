@@ -1,4 +1,3 @@
-from enum import Enum
 import glob
 from typing import List
 
@@ -40,24 +39,20 @@ def point_annotator(im_path: str, labels: List[str], output_path: str='anno.csv'
         )
         points_layer.edge_color_mode = 'cycle'
 
-        Labels = Enum('Labels', labels)
-
         # Create the label selection menu
-        @magicgui()
-        def label_selection(label=Labels[labels[0]]):
+        @magicgui(label={'choices': labels})
+        def label_selection(label):
             return label
         label_menu = label_selection.Gui()
 
         def label_changed(result):
             """Update the Points layer when the label menu selection changes"""
-            selected_label = result.name
+            selected_label = result
             points_layer.current_properties = {'label': np.asarray([selected_label])}
 
         def update_label_menu(event):
             """Update the label menu when the point selection changes"""
-            label = points_layer.current_properties['label'][0]
-            index = label_menu.label_widget.findText(label)
-            label_menu.label_widget.setCurrentIndex(index)
+            label_menu.label = points_layer.current_properties['label'][0]
 
         @viewer.bind_key('.')
         def next_label(event=None):
@@ -89,7 +84,6 @@ def point_annotator(im_path: str, labels: List[str], output_path: str='anno.csv'
             points_layer.current_properties = current_properties
 
 
-        # bind the saving function to
         @viewer.bind_key('Control-S')
         def save_points(event):
 
