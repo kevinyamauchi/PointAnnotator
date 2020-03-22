@@ -1,3 +1,4 @@
+dask-image
 magicgui
 git+https://github.com/kevinyamauchi/napari.git@empty-points-with-props
 numpy
