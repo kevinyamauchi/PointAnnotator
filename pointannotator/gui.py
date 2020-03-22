@@ -56,6 +56,7 @@ def point_annotator(im_path: str, labels: List[str], output_path: str='anno.csv'
 
         @viewer.bind_key('.')
         def next_label(event=None):
+            """Keybinding to advance to the next label with wraparound"""
             current_properties = points_layer.current_properties
             current_label = current_properties['label'][0]
             ind = list(labels).index(current_label)
@@ -64,16 +65,21 @@ def point_annotator(im_path: str, labels: List[str], output_path: str='anno.csv'
             current_properties['label'] = np.array([new_label])
             points_layer.current_properties = current_properties
 
-
         def next_on_click(layer, event):
+            """Mouse click binding to advance the label when a point is added"""
             if layer.mode == 'add':
                 next_label()
+
+                # by default, napari selects the point that was just added
+                # disable that behavior, as the highlight gets in the way
+                layer.selected_data = []
 
         points_layer.mouse_drag_callbacks.append(next_on_click)
 
 
         @viewer.bind_key(',')
         def prev_label(event):
+            """Keybinding to decrement to the previous label with wraparound"""
             current_properties = points_layer.current_properties
             current_label = current_properties['label'][0]
             ind = list(labels).index(current_label)
@@ -86,7 +92,7 @@ def point_annotator(im_path: str, labels: List[str], output_path: str='anno.csv'
 
         @viewer.bind_key('Control-S')
         def save_points(event):
-
+            """Save the added points to a CSV file"""
             # get the frame indices
             frame_indices = np.unique(points_layer.data[:, 0]).astype(np.int)
 
