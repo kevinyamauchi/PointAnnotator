@@ -21,7 +21,25 @@ COLOR_CYCLE = [
 ]
 
 
-def point_annotator(im_path: str, labels: List[str], output_path: str='anno.csv', scorer: str='user'):
+def point_annotator(
+        im_path: str,
+        labels: List[str],
+        output_path: str='anno.csv',
+        scorer: str='user'
+):
+    """Create a GUI for annotating points in a series of images.
+
+    Parameters
+    ----------
+    im_path : str
+        glob-like string for the images to be labeled.
+    labels : List[str]
+        list of the labels for each keypoint to be annotated (e.g., the body parts to be labeled).
+    output_path : str
+        path to the csv file to which the annotations will be saved
+    scorer : str
+        name of the person performing the annotation
+    """
     stack = imread(im_path)
     with napari.gui_qt():
         viewer = napari.view_image(stack, contrast_limits=[0, 256], is_pyramid=False)
@@ -45,14 +63,23 @@ def point_annotator(im_path: str, labels: List[str], output_path: str='anno.csv'
             return label
         label_menu = label_selection.Gui()
 
-        def label_changed(result):
-            """Update the Points layer when the label menu selection changes"""
-            selected_label = result
-            points_layer.current_properties = {'label': np.asarray([selected_label])}
-
         def update_label_menu(event):
             """Update the label menu when the point selection changes"""
             label_menu.label = points_layer.current_properties['label'][0]
+
+        points_layer.events.current_properties.connect(update_label_menu)
+
+        def label_changed(result):
+            """Update the Points layer when the label menu selection changes"""
+            selected_label = result
+            current_properties = points_layer.current_properties
+            current_properties['label'] = np.asarray([selected_label])
+            points_layer.current_properties = current_properties
+
+        label_menu.label_changed.connect(label_changed)
+
+        # add the label menu widget to the viewer
+        viewer.window.add_dock_widget(label_menu)
 
         @viewer.bind_key('.')
         def next_label(event=None):
@@ -118,8 +145,3 @@ def point_annotator(im_path: str, labels: List[str], output_path: str='anno.csv'
 
             # write the dataframe
             df.to_csv(output_path)
-
-        # connect the events and add the label menu widget
-        points_layer.events.current_properties.connect(update_label_menu)
-        label_menu.label_changed.connect(label_changed)
-        viewer.window.add_dock_widget(label_menu)
