@@ -116,31 +116,7 @@ def point_annotator(
             points_layer.current_properties = current_properties
 
 
-        @viewer.bind_key('Control-S')
+        @viewer.bind_key('Control-Alt-S')
         def save_points(event):
             """Save the added points to a CSV file"""
-            # get the frame indices
-            frame_indices = np.unique(points_layer.data[:, 0]).astype(np.int)
-
-            # get the filenames
-            all_files = np.asarray(glob.glob(im_path))
-            file_names = all_files[frame_indices]
-
-            # create and write dataframe
-            header = pd.MultiIndex.from_product(
-                [[scorer], labels, ['x', 'y']],
-                names=['scorer', 'bodyparts', 'coords']
-            )
-            df = pd.DataFrame(
-                index=file_names,
-                columns=header,
-            )
-
-            # populate the dataframe
-            for label, coord in zip(points_layer.properties['label'], points_layer.data):
-                fname = all_files[coord[0].astype(np.int)]
-                df.loc[fname][scorer][label]['x'] = coord[2]
-                df.loc[fname][scorer][label]['y'] = coord[1]
-
-            # write the dataframe
-            df.to_csv(output_path)
+            points_layer.save(output_path)
