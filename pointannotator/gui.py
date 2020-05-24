@@ -42,12 +42,10 @@ def point_annotator(
     """
     stack = imread(im_path)
     with napari.gui_qt():
-        viewer = napari.view_image(stack, contrast_limits=[0, 256], is_pyramid=False)
-        properties = {'label': np.empty(0)}
-        default_properties = {'label': np.array(labels)}
+        viewer = napari.view_image(stack, contrast_limits=[0, 255])
+        properties = {'label': labels}
         points_layer = viewer.add_points(
             properties=properties,
-            default_properties=default_properties,
             edge_color='label',
             edge_color_cycle=COLOR_CYCLE,
             symbol='o',
@@ -99,8 +97,9 @@ def point_annotator(
 
                 # by default, napari selects the point that was just added
                 # disable that behavior, as the highlight gets in the way
-                layer.selected_data = []
+                layer.selected_data = {}
 
+        points_layer.mode = 'add'
         points_layer.mouse_drag_callbacks.append(next_on_click)
 
 
