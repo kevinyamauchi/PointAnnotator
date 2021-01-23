@@ -3,7 +3,7 @@ from typing import List
 from dask_image.imread import imread
 import napari
 import numpy as np
-from magicgui import magicgui
+from magicgui.widgets import ComboBox, Container, Label
 
 COLOR_CYCLE = [
         '#1f77b4',
@@ -35,26 +35,28 @@ def create_label_menu(points_layer, labels):
         the label menu qt widget
     """
     # Create the label selection menu
-    def label_selection(label):
-        return label
-    label_menu = magicgui(label_selection, label={'choices': labels})
+    label_menu = ComboBox(label='feature_label', choices=labels)
+    label_widget = Container(widgets=[label_menu])
+
 
     def update_label_menu(event):
         """Update the label menu when the point selection changes"""
-        label_menu.label = points_layer.current_properties['label'][0]
+        new_label = str(points_layer.current_properties['label'][0])
+        if new_label != label_menu.value:
+            label_menu.value = new_label
 
     points_layer.events.current_properties.connect(update_label_menu)
 
-    def label_changed(result):
+    def label_changed(event):
         """Update the Points layer when the label menu selection changes"""
-        selected_label = result
+        selected_label = event.value
         current_properties = points_layer.current_properties
         current_properties['label'] = np.asarray([selected_label])
         points_layer.current_properties = current_properties
 
-    label_menu.label_changed.connect(label_changed)
+    label_menu.changed.connect(label_changed)
 
-    return label_menu
+    return label_widget
 
 
 def point_annotator(
@@ -74,6 +76,7 @@ def point_annotator(
     with napari.gui_qt():
         viewer = napari.view_image(stack)
         points_layer = viewer.add_points(
+            data=np.empty((0, 3)),
             properties={'label': labels},
             edge_color='label',
             edge_color_cycle=COLOR_CYCLE,
@@ -85,8 +88,8 @@ def point_annotator(
         points_layer.edge_color_mode = 'cycle'
 
         # add the label menu widget to the viewer
-        label_menu = create_label_menu(points_layer, labels)
-        viewer.window.add_dock_widget(label_menu)
+        label_widget = create_label_menu(points_layer, labels)
+        viewer.window.add_dock_widget(label_widget)
 
         @viewer.bind_key('.')
         def next_label(event=None):
@@ -103,7 +106,6 @@ def point_annotator(
             """Mouse click binding to advance the label when a point is added"""
             if layer.mode == 'add':
                 next_label()
-
                 # by default, napari selects the point that was just added
                 # disable that behavior, as the highlight gets in the way
                 layer.selected_data = {}
