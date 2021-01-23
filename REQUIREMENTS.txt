@@ -1,6 +1,6 @@
 dask-image
-magicgui
-napari>=0.3.3
+magicgui>=0.2.5
+napari>=0.4.3
 numpy
 pandas
 scikit-image
