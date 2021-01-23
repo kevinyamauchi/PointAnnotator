@@ -35,11 +35,9 @@ def create_label_menu(points_layer, labels):
         the label menu qt widget
     """
     # Create the label selection menu
-    @magicgui(label={'choices': labels})
     def label_selection(label):
         return label
-
-    label_menu = label_selection.Gui()
+    label_menu = magicgui(label_selection, label={'choices': labels})
 
     def update_label_menu(event):
         """Update the label menu when the point selection changes"""
