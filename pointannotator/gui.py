@@ -3,7 +3,7 @@ from typing import List
 from dask_image.imread import imread
 import napari
 import numpy as np
-from magicgui.widgets import ComboBox, Container, Label
+from magicgui.widgets import ComboBox, Container
 
 COLOR_CYCLE = [
         '#1f77b4',
