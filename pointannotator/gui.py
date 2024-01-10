@@ -47,9 +47,8 @@ def create_label_menu(points_layer, labels):
 
     points_layer.events.current_properties.connect(update_label_menu)
 
-    def label_changed(event):
+    def label_changed(selected_label):
         """Update the Points layer when the label menu selection changes"""
-        selected_label = event.value
         current_properties = points_layer.current_properties
         current_properties['label'] = np.asarray([selected_label])
         points_layer.current_properties = current_properties
@@ -77,12 +76,12 @@ def point_annotator(
     viewer = napari.view_image(stack)
     points_layer = viewer.add_points(
         data=np.empty((0, 3)),
-        properties={'label': labels},
+        property_choices={'label': labels},
         edge_color='label',
         edge_color_cycle=COLOR_CYCLE,
         symbol='o',
         face_color='transparent',
-        edge_width=8,
+        edge_width=0.5,  # fraction of point size
         size=12,
     )
     points_layer.edge_color_mode = 'cycle'
