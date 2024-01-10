@@ -73,54 +73,56 @@ def point_annotator(
         list of the labels for each keypoint to be annotated (e.g., the body parts to be labeled).
     """
     stack = imread(im_path)
-    with napari.gui_qt():
-        viewer = napari.view_image(stack)
-        points_layer = viewer.add_points(
-            data=np.empty((0, 3)),
-            properties={'label': labels},
-            edge_color='label',
-            edge_color_cycle=COLOR_CYCLE,
-            symbol='o',
-            face_color='transparent',
-            edge_width=8,
-            size=12,
-        )
-        points_layer.edge_color_mode = 'cycle'
 
-        # add the label menu widget to the viewer
-        label_widget = create_label_menu(points_layer, labels)
-        viewer.window.add_dock_widget(label_widget)
+    viewer = napari.view_image(stack)
+    points_layer = viewer.add_points(
+        data=np.empty((0, 3)),
+        properties={'label': labels},
+        edge_color='label',
+        edge_color_cycle=COLOR_CYCLE,
+        symbol='o',
+        face_color='transparent',
+        edge_width=8,
+        size=12,
+    )
+    points_layer.edge_color_mode = 'cycle'
 
-        @viewer.bind_key('.')
-        def next_label(event=None):
-            """Keybinding to advance to the next label with wraparound"""
-            current_properties = points_layer.current_properties
-            current_label = current_properties['label'][0]
-            ind = list(labels).index(current_label)
-            new_ind = (ind + 1) % len(labels)
-            new_label = labels[new_ind]
-            current_properties['label'] = np.array([new_label])
-            points_layer.current_properties = current_properties
+    # add the label menu widget to the viewer
+    label_widget = create_label_menu(points_layer, labels)
+    viewer.window.add_dock_widget(label_widget)
 
-        def next_on_click(layer, event):
-            """Mouse click binding to advance the label when a point is added"""
-            if layer.mode == 'add':
-                next_label()
-                # by default, napari selects the point that was just added
-                # disable that behavior, as the highlight gets in the way
-                layer.selected_data = {}
+    @viewer.bind_key('.')
+    def next_label(event=None):
+        """Keybinding to advance to the next label with wraparound"""
+        current_properties = points_layer.current_properties
+        current_label = current_properties['label'][0]
+        ind = list(labels).index(current_label)
+        new_ind = (ind + 1) % len(labels)
+        new_label = labels[new_ind]
+        current_properties['label'] = np.array([new_label])
+        points_layer.current_properties = current_properties
 
-        points_layer.mode = 'add'
-        points_layer.mouse_drag_callbacks.append(next_on_click)
+    def next_on_click(layer, event):
+        """Mouse click binding to advance the label when a point is added"""
+        if layer.mode == 'add':
+            next_label()
+            # by default, napari selects the point that was just added
+            # disable that behavior, as the highlight gets in the way
+            layer.selected_data = {}
 
-        @viewer.bind_key(',')
-        def prev_label(event):
-            """Keybinding to decrement to the previous label with wraparound"""
-            current_properties = points_layer.current_properties
-            current_label = current_properties['label'][0]
-            ind = list(labels).index(current_label)
-            n_labels = len(labels)
-            new_ind = ((ind - 1) + n_labels) % n_labels
-            new_label = labels[new_ind]
-            current_properties['label'] = np.array([new_label])
-            points_layer.current_properties = current_properties
+    points_layer.mode = 'add'
+    points_layer.mouse_drag_callbacks.append(next_on_click)
+
+    @viewer.bind_key(',')
+    def prev_label(event):
+        """Keybinding to decrement to the previous label with wraparound"""
+        current_properties = points_layer.current_properties
+        current_label = current_properties['label'][0]
+        ind = list(labels).index(current_label)
+        n_labels = len(labels)
+        new_ind = ((ind - 1) + n_labels) % n_labels
+        new_label = labels[new_ind]
+        current_properties['label'] = np.array([new_label])
+        points_layer.current_properties = current_properties
+
+    napari.run()
