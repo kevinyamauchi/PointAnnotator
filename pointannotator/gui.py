@@ -104,10 +104,13 @@ def point_annotator(
     def next_on_click(layer, event):
         """Mouse click binding to advance the label when a point is added"""
         if layer.mode == 'add':
-            next_label()
             # by default, napari selects the point that was just added
             # disable that behavior, as the highlight gets in the way
+            # and also causes next_label to change the color of the
+            # point that was just added
             layer.selected_data = {}
+
+            next_label()
 
     points_layer.mode = 'add'
     points_layer.mouse_drag_callbacks.append(next_on_click)
