@@ -1,38 +1,38 @@
 from typing import List
 
 from dask_image.imread import imread
+from magicgui.widgets import ComboBox, Container
 import napari
 import numpy as np
-from magicgui.widgets import ComboBox, Container
 
 COLOR_CYCLE = [
-        '#1f77b4',
-        '#ff7f0e',
-        '#2ca02c',
-        '#d62728',
-        '#9467bd',
-        '#8c564b',
-        '#e377c2',
-        '#7f7f7f',
-        '#bcbd22',
-        '#17becf'
+    '#1f77b4',
+    '#ff7f0e',
+    '#2ca02c',
+    '#d62728',
+    '#9467bd',
+    '#8c564b',
+    '#e377c2',
+    '#7f7f7f',
+    '#bcbd22',
+    '#17becf'
 ]
 
 
 def create_label_menu(points_layer, labels):
     """Create a label menu widget that can be added to the napari viewer dock
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     points_layer : napari.layers.Points
         a napari points layer
     labels : List[str]
         list of the labels for each keypoint to be annotated (e.g., the body parts to be labeled).
 
-    Returns:
-    --------
-    label_menu : QComboBox
-        the label menu qt widget
+    Returns
+    -------
+    label_menu : Container
+        the magicgui Container with our dropdown menu widget
     """
     # Create the label selection menu
     label_menu = ComboBox(label='feature_label', choices=labels)
@@ -76,7 +76,6 @@ def point_annotator(
 
     viewer = napari.view_image(stack)
     points_layer = viewer.add_points(
-        data=[],
         ndim=3,
         property_choices={'label': labels},
         edge_color='label',
