@@ -52,6 +52,7 @@ def create_label_menu(points_layer, labels):
         current_properties = points_layer.current_properties
         current_properties['label'] = np.asarray([selected_label])
         points_layer.current_properties = current_properties
+        points_layer.refresh_colors()
 
     label_menu.changed.connect(label_changed)
 
@@ -100,16 +101,16 @@ def point_annotator(
         new_label = labels[new_ind]
         current_properties['label'] = np.array([new_label])
         points_layer.current_properties = current_properties
+        points_layer.refresh_colors()
 
     def next_on_click(layer, event):
         """Mouse click binding to advance the label when a point is added"""
         if layer.mode == 'add':
-            # by default, napari selects the point that was just added
-            # disable that behavior, as the highlight gets in the way
+            # By default, napari selects the point that was just added.
+            # Disable that behavior, as the highlight gets in the way
             # and also causes next_label to change the color of the
-            # point that was just added
-            layer.selected_data = {}
-
+            # point that was just added.
+            layer.selected_data = set()
             next_label()
 
     points_layer.mode = 'add'
@@ -126,5 +127,6 @@ def point_annotator(
         new_label = labels[new_ind]
         current_properties['label'] = np.array([new_label])
         points_layer.current_properties = current_properties
+        points_layer.refresh_colors()
 
     napari.run()
