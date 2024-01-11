@@ -76,7 +76,8 @@ def point_annotator(
 
     viewer = napari.view_image(stack)
     points_layer = viewer.add_points(
-        data=np.empty((0, 3)),
+        data=[],
+        ndim=3,
         property_choices={'label': labels},
         edge_color='label',
         edge_color_cycle=COLOR_CYCLE,
