@@ -3,7 +3,7 @@ from typing import List
 from dask_image.imread import imread
 from magicgui.widgets import ComboBox, Container
 import napari
-import numpy as np
+import pandas as pd
 
 COLOR_CYCLE = [
     '#1f77b4',
@@ -41,17 +41,17 @@ def create_label_menu(points_layer, labels):
 
     def update_label_menu(event):
         """Update the label menu when the point selection changes"""
-        new_label = str(points_layer.current_properties['label'][0])
+        new_label = str(points_layer.feature_defaults['label'][0])
         if new_label != label_menu.value:
             label_menu.value = new_label
 
-    points_layer.events.current_properties.connect(update_label_menu)
+    points_layer.events.feature_defaults.connect(update_label_menu)
 
     def label_changed(selected_label):
         """Update the Points layer when the label menu selection changes"""
-        current_properties = points_layer.current_properties
-        current_properties['label'] = np.asarray([selected_label])
-        points_layer.current_properties = current_properties
+        feature_defaults = points_layer.feature_defaults
+        feature_defaults['label'] = selected_label
+        points_layer.feature_defaults = feature_defaults
         points_layer.refresh_colors()
 
     label_menu.changed.connect(label_changed)
@@ -77,7 +77,7 @@ def point_annotator(
     viewer = napari.view_image(stack)
     points_layer = viewer.add_points(
         ndim=3,
-        property_choices={'label': labels},
+        features=pd.DataFrame({'label': pd.Categorical([], categories=labels)}),
         border_color='label',
         border_color_cycle=COLOR_CYCLE,
         symbol='o',
@@ -94,13 +94,13 @@ def point_annotator(
     @viewer.bind_key('.')
     def next_label(event=None):
         """Keybinding to advance to the next label with wraparound"""
-        current_properties = points_layer.current_properties
-        current_label = current_properties['label'][0]
-        ind = list(labels).index(current_label)
+        feature_defaults = points_layer.feature_defaults
+        default_label = feature_defaults['label'][0]
+        ind = list(labels).index(default_label)
         new_ind = (ind + 1) % len(labels)
         new_label = labels[new_ind]
-        current_properties['label'] = np.array([new_label])
-        points_layer.current_properties = current_properties
+        feature_defaults['label'] = new_label
+        points_layer.feature_defaults = feature_defaults
         points_layer.refresh_colors()
 
     def next_on_click(layer, event):
@@ -119,14 +119,13 @@ def point_annotator(
     @viewer.bind_key(',')
     def prev_label(event):
         """Keybinding to decrement to the previous label with wraparound"""
-        current_properties = points_layer.current_properties
-        current_label = current_properties['label'][0]
-        ind = list(labels).index(current_label)
+        feature_defaults = points_layer.feature_defaults
+        default_label = feature_defaults['label'][0]
+        ind = list(labels).index(default_label)
         n_labels = len(labels)
         new_ind = ((ind - 1) + n_labels) % n_labels
-        new_label = labels[new_ind]
-        current_properties['label'] = np.array([new_label])
-        points_layer.current_properties = current_properties
+        feature_defaults['label'] = labels[new_ind]
+        points_layer.feature_defaults = feature_defaults
         points_layer.refresh_colors()
 
     napari.run()
