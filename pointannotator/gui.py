@@ -78,14 +78,14 @@ def point_annotator(
     points_layer = viewer.add_points(
         ndim=3,
         property_choices={'label': labels},
-        edge_color='label',
-        edge_color_cycle=COLOR_CYCLE,
+        border_color='label',
+        border_color_cycle=COLOR_CYCLE,
         symbol='o',
         face_color='transparent',
-        edge_width=0.5,  # fraction of point size
+        border_width=0.5,  # fraction of point size
         size=12,
     )
-    points_layer.edge_color_mode = 'cycle'
+    points_layer.border_color_mode = 'cycle'
 
     # add the label menu widget to the viewer
     label_widget = create_label_menu(points_layer, labels)
